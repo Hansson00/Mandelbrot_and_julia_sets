@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
 	window = new Window(WIN_WIDTH, WIN_HEIGHT);
 
 	while (window->running) {
-
+		window->draw();
 	}
 	window->clean_up();
 
