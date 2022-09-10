@@ -3,6 +3,7 @@
 
 #define DEBUG
 
+void draw_helper(int x0, int x1, uint8_t* pixelArray, int** draw_matrix, int iterations, SDL_Surface* screen);
 
 Window::Window(int width, int height) {
 
@@ -40,6 +41,8 @@ void Window::draw() {
 
 }
 
+#define RENDER_THs 8
+
 void Window::draw_from_matrix(int iterations) {
 
 	int n;
@@ -50,13 +53,34 @@ void Window::draw_from_matrix(int iterations) {
 	SDL_LockSurface(screen);
 	uint8_t* pixelArray = (uint8_t*)screen->pixels;
 
-	for (int x = 0; x < 1000; x++) {
+	std::thread* threads[RENDER_THs]; // fixa
+
+	for (int i = 0; i < RENDER_THs; i++) {
+		threads[i] = new std::thread(draw_helper, i * 1000 / RENDER_THs, (i + 1) * 1000 / RENDER_THs, pixelArray, pixel_matrix, iterations, screen);
+	}
+
+	for (int i = 0; i < RENDER_THs; i++) {
+		threads[i]->join();
+	}
+
+	SDL_UnlockSurface(screen);
+	SDL_UpdateWindowSurface(window);
+}
+
+
+
+void draw_helper(int x0, int x1, uint8_t* pixelArray, int** draw_matrix, int iterations, SDL_Surface* screen) {
+
+	int n;
+
+	for (int x = x0; x < x1; x++) {
 		for (int y = 0; y < 1000; y++) {
-			n = pixel_matrix[x][y];
+			n = draw_matrix[x][y];
 			if (n != iterations) {
-				pixelArray[y * screen->pitch + x * screen->format->BytesPerPixel + 0] = 50;	// B
-				pixelArray[y * screen->pitch + x * screen->format->BytesPerPixel + 1] = n * 255 / iterations;	// G
-				pixelArray[y * screen->pitch + x * screen->format->BytesPerPixel + 2] = (int)sqrt(n) * 11; 	// R
+
+				pixelArray[y * screen->pitch + x * screen->format->BytesPerPixel + 0] = (powf((cos(sqrt(n) + 100)), 2) * 255);	// B
+				pixelArray[y * screen->pitch + x * screen->format->BytesPerPixel + 1] = (powf((cos(sqrt(n) + 50)), 2) * 255);	// G
+				pixelArray[y * screen->pitch + x * screen->format->BytesPerPixel + 2] = (powf((cos(sqrt(n))), 2) * 255); 	// R
 			}
 			else {
 				pixelArray[y * screen->pitch + x * screen->format->BytesPerPixel + 0] = 0;		// B
@@ -65,14 +89,17 @@ void Window::draw_from_matrix(int iterations) {
 			}
 		}
 	}
-
-	SDL_UnlockSurface(screen);
-	SDL_UpdateWindowSurface(window);
-
-
 }
 
 void Window::clean_up() {
+
+	delete(julia);
+
+	for (int i = 0; i < 1000; i++) {
+		delete(pixel_matrix[i]);
+	}
+	delete(pixel_matrix);
+
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
 	SDL_Quit();

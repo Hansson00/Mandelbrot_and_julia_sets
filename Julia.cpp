@@ -1,6 +1,5 @@
 #include "Julia.h"
 
-
 void julia_set_SC(int start_x, int stop_x, long double x_min, long double pixel_scale_x, int start_y, int stop_y, long double y_min, long double pixel_scale_y, int iterations, int infinity, int** draw_matrix, double x_const, double y_const);
 
 Julia::Julia(int** matrix)
@@ -14,8 +13,8 @@ Julia::Julia(int** matrix)
 	x_pixel_scale = x_distance / 1000; // should be /window size
 	y_pixel_scale = y_distance / 1000;
 
-	iterations = 100;
-	infinity = 16;
+	iterations = 64;
+	infinity = 32;
 
 	pixel_matrix = matrix;
 
@@ -29,8 +28,8 @@ int Julia::julia_set(int type, int start_x, int stop_x, int start_y, int stop_y)
 
 	double constant = 0.7885;
 
-	long double x_const = constant * cos(duration.count() / 5);
-	long double y_const = constant * sin(duration.count() / 5);
+	long double x_const = constant * cos(duration.count() / 10);
+	long double y_const = constant * sin(duration.count() / 10);
 
 	switch (type)
 	{
@@ -78,16 +77,14 @@ void julia_set_SC(int start_x, int stop_x, long double x_min, long double pixel_
 
 void Julia::julia_set_MC(int start_x, int stop_x, int start_y, int stop_y, long double x_const, long double y_const) {
 
-	std::thread* threads[GRID * GRID];
-
-	for (int i = 0; i < GRID; i++) {
+	for (int x = 0; x < GRID; x++) {
 		for (int y = 0; y < GRID; y++) {
-			threads[y * GRID + i] = new std::thread(julia_set_SC, i * (1000 / GRID), (i + 1) * 1000 / GRID, x_min, x_pixel_scale, y * (1000 / GRID), (y + 1) * 1000 / GRID, y_min, y_pixel_scale, iterations, infinity, pixel_matrix, x_const, y_const);
+			threads[y * GRID + x] = new std::thread(julia_set_SC, x * (1000 / GRID), (x + 1) * 1000 / GRID, x_min, x_pixel_scale, y * (1000 / GRID), (y + 1) * 1000 / GRID, y_min, y_pixel_scale, iterations, infinity, pixel_matrix, x_const, y_const);
 		}
 	}
 
 	for (int i = 0; i < GRID * GRID; i++) {
 		threads[i]->join();
+		delete(threads[i]);
 	}
-
 }

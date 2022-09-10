@@ -11,10 +11,10 @@ class Julia
 {
 
 public:
+
 	Julia(int** matrix);
 	int julia_set(int type, int x_start, int x_stop, int y_start, int y_stop);
-
-	
+	void clean_up();
 
 private:
 	
@@ -24,6 +24,8 @@ private:
 	int iterations;
 	int infinity;
 	int** pixel_matrix;
+	std::thread* threads[GRID * GRID];
+
 
 	std::chrono::system_clock::time_point clock;
 	
