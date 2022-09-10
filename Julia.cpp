@@ -13,8 +13,8 @@ Julia::Julia(int** matrix)
 	x_pixel_scale = x_distance / 1000; // should be /window size
 	y_pixel_scale = y_distance / 1000;
 
-	iterations = 64;
-	infinity = 32;
+	iterations = 100;
+	infinity = 16;
 
 	pixel_matrix = matrix;
 

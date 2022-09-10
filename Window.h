@@ -3,6 +3,10 @@
 #include "Mandelbrot.h"
 #include "iostream"
 #include "Julia.h"
+#include "SDL_Text.h"
+#include "string"
+#include "chrono"
+
 
 class Window
 {
@@ -21,6 +25,9 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	Julia* julia;
+	SDL_Text* text;
+	std::chrono::system_clock::time_point last_time;
+
 
 	bool init_window(int width, int height);
 	
