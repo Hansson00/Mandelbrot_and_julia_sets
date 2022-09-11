@@ -8,19 +8,23 @@
 #include "chrono"
 
 
+
+
 class Window
 {
 public:
 	
 	int window_width, window_height;
 	bool running = true;
-	//init
+
 	Window(int window_widthm, int window_height);
 	
 	void draw();
 	void clean_up();
 
 private:
+
+
 	int** pixel_matrix;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
@@ -28,6 +32,9 @@ private:
 	SDL_Text* text;
 	std::chrono::system_clock::time_point last_time;
 
+	std::thread* threads[25];		//25 ?
+
+	void display_fps(int x, int y);
 
 	bool init_window(int width, int height);
 	

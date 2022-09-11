@@ -7,7 +7,7 @@ SDL_Text::SDL_Text(int size) {
         return;
     }
             
-    font = TTF_OpenFont("./fonts/raleway/Raleway-Regular.ttf", size);
+    font = TTF_OpenFont("./fonts/raleway/Raleway-SemiBold.ttf", size);
     if (font == nullptr) {
         std::cout << "Error with font...\n";
         return;
@@ -15,7 +15,11 @@ SDL_Text::SDL_Text(int size) {
 
 }
 
-void SDL_Text::draw_text(std::string str, SDL_Window* window, int x, int y, int width, int height) {
+SDL_Text::~SDL_Text() {
+    TTF_CloseFont(font);
+}
+
+void SDL_Text::draw_text(std::string str, SDL_Window* window, int x, int y) {
     
     SDL_Surface* poggers = TTF_RenderText_Solid(font, str.c_str(), { font_color_r,font_color_g,font_color_b });
     SDL_Surface* screen = SDL_GetWindowSurface(window);
@@ -26,8 +30,5 @@ void SDL_Text::draw_text(std::string str, SDL_Window* window, int x, int y, int 
     SDL_FreeSurface(poggers);
 }
 
-void SDL_Text::clean_up() {
-	TTF_CloseFont(font);
-}
 
 

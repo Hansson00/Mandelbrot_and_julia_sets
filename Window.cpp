@@ -1,8 +1,11 @@
 #include "Window.h"
 
+
+#define MAX_WIDTH 2000
+#define MAX_HEIGHT 1080
+
 #define DEBUG
 void draw_helper(int x0, int x1, uint8_t* pixelArray, int** draw_matrix, int iterations, SDL_Surface* screen);
-
 
 double cube(double x) {
 	return x * x;
@@ -10,20 +13,45 @@ double cube(double x) {
 
 Window::Window(int width, int height) {
 
-	window_width = width;
-	window_height = height;
-	last_time = std::chrono::system_clock::now();
+	if (width > MAX_WIDTH) window_width = MAX_WIDTH;	// Init window width
+	else window_width = width;							
+	
+	if (height > MAX_HEIGHT) window_height = MAX_HEIGHT;// Init window height
+	else window_height = height;
+	
+	last_time = std::chrono::system_clock::now();		// FPS clock
 
-	//Creates a matrix for all pixels
-	pixel_matrix = new int* [1000];
-	for (int i = 0; i < 1000; i++)
-		pixel_matrix[i] = new int[1000];
+	pixel_matrix = new int* [MAX_WIDTH];				// Creates a matrix for all pixels
+	for (int i = 0; i < MAX_WIDTH; i++)
+		pixel_matrix[i] = new int[MAX_HEIGHT];
 
-	text = new SDL_Text(16);
+	text = new SDL_Text(20);							// Init text display
 
-	julia = new Julia(pixel_matrix);
+	julia = new Julia(pixel_matrix);					// Init julia fractal
 
-	running = Window::init_window(width, height);
+	running = Window::init_window(window_width, window_height);		// Init window
+}
+
+void Window::display_fps(int x, int y) {
+
+	static int i = 0;
+	static int delta_t = 0;
+	static int smooth_fps = 60;
+
+	std::chrono::system_clock::time_point point = std::chrono::system_clock::now();
+	std::chrono::duration<float> duration = point - last_time;
+	last_time = point;
+
+	if (i > 4) {
+		i = 0;
+		smooth_fps = delta_t / 5;
+		delta_t = 0;
+	}
+	delta_t += (int) 1 / duration.count();
+	i++;
+	std::string fps_counter = "FPS: ";
+	fps_counter.append(std::to_string(smooth_fps));
+	text->draw_text(fps_counter, window, x, y);
 }
 
 bool Window::init_window(int width, int height) {
@@ -41,23 +69,10 @@ bool Window::init_window(int width, int height) {
 
 void Window::draw() {
 
-	int n = julia->julia_set(1, 0, 1000, 0, 1000);
-	draw_from_matrix(n);
-
-	std::chrono::system_clock::time_point point = std::chrono::system_clock::now();
-	std::chrono::duration<float> duration = point - last_time;
-	last_time = point;
-	int delta_time =(int) 1 / duration.count();
-
-
-	std::string fps_counter = "FPS: ";
-
-	fps_counter.append(std::to_string(delta_time));
-
-
-	text->draw_text(fps_counter, window, 10, 10, 25, 25);
-
-	SDL_UpdateWindowSurface(window);
+	int iterations = julia->julia_set(1, 0, 1000, 0, 1000);		// Draw a julia set at 0,0 1000x1000 with MT
+	draw_from_matrix(iterations);								// draw the result
+	Window::display_fps(10, 10);								// display fps counter att 10, 10
+	SDL_UpdateWindowSurface(window);							// draw call
 }
 
 #define RENDER_THs 10
@@ -66,14 +81,13 @@ void Window::draw_from_matrix(int iterations) {
 
 	int n;
 
-	SDL_Surface* screen;
-	screen = SDL_GetWindowSurface(window);
+	SDL_Surface* screen = SDL_GetWindowSurface(window);
 
 	SDL_LockSurface(screen);
 	uint8_t* pixelArray = (uint8_t*)screen->pixels;
 
-	std::thread* threads[RENDER_THs]; // fixa
 
+	//TODO: Make the funtion general
 	for (int i = 0; i < RENDER_THs; i++) {
 		threads[i] = new std::thread(draw_helper, i * 1000 / RENDER_THs, (i + 1) * 1000 / RENDER_THs, pixelArray, pixel_matrix, iterations, screen);
 	}
@@ -82,7 +96,6 @@ void Window::draw_from_matrix(int iterations) {
 		threads[i]->join();
 		delete(threads[i]);
 	}
-
 	SDL_UnlockSurface(screen);
 	SDL_FreeSurface(screen);
 
@@ -120,6 +133,8 @@ void Window::clean_up() {
 		delete(pixel_matrix[i]);
 	}
 	delete(pixel_matrix);
+
+	delete(threads);
 
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);

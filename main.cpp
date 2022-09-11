@@ -2,7 +2,7 @@
 #include "iostream"
 
 
-#define WIN_WIDTH 1000
+#define WIN_WIDTH 2000
 #define WIN_HEIGHT 1000
 
 Window* window = nullptr;
