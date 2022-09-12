@@ -15,20 +15,24 @@ public:
 
 	Julia(int** matrix);
 	int julia_set(int type, int x_start, int x_stop, double y_start, double y_stop);
+	void set_new_time();
+	void zoom(double times);
+	void shift_to_mouse(double times, int x, int y);
+	int iterations;
 
 private:
 	
-	double x_min, y_min;
+	double x_coord, y_coord;
 	double x_distance, y_distance;
 	double x_pixel_scale, y_pixel_scale;
-	int iterations;
+	
 	int infinity;
 	int** pixel_matrix;
 	std::thread* threads[GRID * GRID];
 
 	std::chrono::system_clock::time_point clock;
 	
-	void julia_set_MC(int start_x, int stop_x, int start_y, int stop_y, long double x_const, long double y_const);
+	void julia_set_MC(int start_x, int stop_x, int start_y, int stop_y, double x_const, double y_const);
 
 };
 

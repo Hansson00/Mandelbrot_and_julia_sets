@@ -1,11 +1,11 @@
 #include "Julia.h"
 
-void julia_set_SC(int start_x, int stop_x, long double x_min, long double pixel_scale_x, int start_y, int stop_y, long double y_min, long double pixel_scale_y, int iterations, int infinity, int** draw_matrix, double x_const, double y_const);
+void julia_set_SC(int start_x, int stop_x, double x_coord, double pixel_scale_x, int start_y, int stop_y, double y_coord, double pixel_scale_y, int iterations, int infinity, int** draw_matrix, double x_const, double y_const);
 
 Julia::Julia(int** matrix)
 {
-	x_min = -1.5;
-	y_min = -1.5;
+	x_coord = 0;
+	y_coord = 0;
 
 	x_distance = 3;
 	y_distance = 3;
@@ -13,7 +13,7 @@ Julia::Julia(int** matrix)
 	x_pixel_scale = x_distance / 1000; // should be /window size
 	y_pixel_scale = y_distance / 1000;
 
-	iterations = 100;
+	iterations = 128;
 	infinity = 16;
 
 	pixel_matrix = matrix;
@@ -28,13 +28,13 @@ int Julia::julia_set(int type, int start_x, int stop_x, double start_y, double s
 
 	double constant = 0.7885;
 
-	long double x_const = constant * cos(duration.count() / 20);
-	long double y_const = constant * sin(duration.count() / 20);
+	double x_const = constant * cos(duration.count() / 20);
+	double y_const = constant * sin(duration.count() / 20);
 
 	switch (type)
 	{
 	case 0:
-		julia_set_SC(start_x, stop_x, x_min, x_pixel_scale, 0, 1000, y_min, y_pixel_scale, iterations, infinity, pixel_matrix, x_const, y_const);
+		julia_set_SC(start_x, stop_x, x_coord, x_pixel_scale, 0, 1000, y_coord, y_pixel_scale, iterations, infinity, pixel_matrix, x_const, y_const);
 		break;
 
 	case 1:
@@ -53,15 +53,32 @@ int Julia::julia_set(int type, int start_x, int stop_x, double start_y, double s
 	return iterations;
 }
 
+void Julia::set_new_time() {
+	clock = std::chrono::system_clock::now();
+}
+
+void Julia::zoom(double times) {
+	x_distance /= times;
+	y_distance /= times;
+	x_pixel_scale = x_distance / 1000;	//Window_width
+	y_pixel_scale = y_distance / 1000;	//Window_width
+}
+
+void Julia::shift_to_mouse(double times, int x, int y) {
+	x_coord += (x - 500) * x_pixel_scale * times;
+	y_coord += (y - 500) * y_pixel_scale * times;
+}
+
 // TODO: make a struct for all the variables
-void julia_set_SC(int start_x, int stop_x, long double x_min, long double pixel_scale_x, int start_y, int stop_y, long double y_min, long double pixel_scale_y, int iterations, int infinity, int** draw_matrix, double x_const, double y_const) {
+
+void julia_set_SC(int start_x, int stop_x, double x_coord, double pixel_scale_x, int start_y, int stop_y, double y_coord, double pixel_scale_y, int iterations, int infinity, int** draw_matrix, double x_const, double y_const) {
 	
-	long double xx = x_min + (start_x % 1000) * pixel_scale_x;
-	long double yy;
-	long double a, b, twoab, aa, bb;
+	double xx = x_coord - pixel_scale_x*500 + (start_x % 1000) * pixel_scale_x;
+	double yy;
+	double a, b, twoab, aa, bb;
 
 	for (int x = start_x + 1; x < stop_x + 1; x++) {
-		yy = y_min + (start_y % 1000)* pixel_scale_y;
+		yy = y_coord - pixel_scale_y * 500 + (start_y % 1000)* pixel_scale_y;
 		for (int y = start_y + 1; y < stop_y + 1; y++) {
 			int n = 0;
 			a = xx;
@@ -81,11 +98,11 @@ void julia_set_SC(int start_x, int stop_x, long double x_min, long double pixel_
 	}
 }
 
-void Julia::julia_set_MC(int start_x, int stop_x, int start_y, int stop_y, long double x_const, long double y_const) {
+void Julia::julia_set_MC(int start_x, int stop_x, int start_y, int stop_y, double x_const, double y_const) {
 
 	for (int x = 0; x < GRID; x++) {
 		for (int y = 0; y < GRID; y++) {
-			threads[y * GRID + x] = new std::thread(julia_set_SC, x * (1000 / GRID) + start_x, (x + 1) * 1000 / GRID + stop_x - start_x, x_min, x_pixel_scale, y * (1000 / GRID), (y + 1) * 1000 / GRID, y_min, y_pixel_scale, iterations, infinity, pixel_matrix, x_const, y_const);
+			threads[y * GRID + x] = new std::thread(julia_set_SC, x * (1000 / GRID) + start_x, (x + 1) * 1000 / GRID + stop_x - start_x, x_coord, x_pixel_scale, y * (1000 / GRID), (y + 1) * 1000 / GRID, y_coord, y_pixel_scale, iterations, infinity, pixel_matrix, x_const, y_const);
 		}
 	}
 

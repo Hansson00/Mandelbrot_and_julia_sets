@@ -19,7 +19,6 @@ public:
 	Window(int window_widthm, int window_height, int** matrix, int render_threads);
 	~Window();
 	void draw(int start_x, int julia_iterations);
-	void clean_up();
 
 private:
 

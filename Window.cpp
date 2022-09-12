@@ -2,7 +2,9 @@
 
 
 #define MAX_WIDTH 2000
-#define MAX_HEIGHT 1080
+#define MAX_HEIGHT 1050
+#define STATS_HEIGHT 50
+
 
 #define DEBUG
 void draw_helper(int x0, int x1, int y_height, uint8_t* pixelArray, int** draw_matrix, int iterations, SDL_Surface* screen);
@@ -77,8 +79,6 @@ void Window::draw(int start_x, int iterations) {
 
 void Window::draw_from_matrix(int iterations, int x_start) {
 
-	int n;
-
 	SDL_Surface* screen = SDL_GetWindowSurface(window);
 
 	SDL_LockSurface(screen);
@@ -86,7 +86,7 @@ void Window::draw_from_matrix(int iterations, int x_start) {
 
 	//TODO: Make the funtion general
 	for (int i = 0; i < render_ths; i++) {
-		threads[i] = new std::thread(draw_helper, i * 1000 / render_ths + x_start, (i + 1) * 1000 / render_ths + x_start, window_height, pixelArray, pixel_matrix, iterations, screen);
+		threads[i] = new std::thread(draw_helper, i * 1000 / render_ths + x_start, (i + 1) * 1000 / render_ths + x_start, window_height-STATS_HEIGHT, pixelArray, pixel_matrix, iterations, screen);
 	}
 
 	for (int i = 0; i < render_ths; i++) {

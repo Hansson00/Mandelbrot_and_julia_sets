@@ -13,8 +13,8 @@ public:
 	void events();
 
 private:
-	double mouse_x = 0;
-	double mouse_y = 0;
+	double mouse_x_coord = 0;
+	double mouse_y_coord = 0;
 
 	bool continuous_rendering = false;
 	Window* screen;

@@ -20,7 +20,6 @@ Engine::Engine(int width, int height) {
 	for (int i = 0; i < MAX_WIDTH; i++) {
 		pixel_matrix[i] = new int[MAX_HEIGHT];
 		for (int j = 0; j < MAX_HEIGHT; j++) {
-			
 			pixel_matrix[i][j] = 0;
 		}
 	}
@@ -33,8 +32,8 @@ Engine::Engine(int width, int height) {
 
 	running = true;
 
-	screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000, 0, 1000));
-	screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x, mouse_y));
+	screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
+	screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
 
 
 }
@@ -55,40 +54,98 @@ void Engine::events() {
 
 	SDL_Event event;
 	SDL_PollEvent(&event);
+	
+	
+	int mouse_x, mouse_y;
+	if (SDL_GetMouseState(&mouse_x, &mouse_y) & SDL_BUTTON_LEFT != 0) { //Checks if left mb is pressed
+		continuous_rendering = false;
+
+		mouse_x_coord = mandelbrot->x_coord + mandelbrot->x_pixel_scale * (mouse_x - 500);
+		mouse_y_coord = mandelbrot->y_coord + mandelbrot->y_pixel_scale * (mouse_y - 500);
+		screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+	}
+	
 	switch (event.type) {
-	case SDL_MOUSEBUTTONDOWN:
-		switch (event.button.button)
-		{
-			case SDL_BUTTON_LEFT:
 
-				int x, y;
+	case SDL_KEYDOWN:
 
-				SDL_GetMouseState(&x, &y);
+		switch (event.key.keysym.sym) {
 
-				mouse_x = mandelbrot->x_min + x * mandelbrot->x_pixel_scale;
-				mouse_y = mandelbrot->y_min + y * mandelbrot->y_pixel_scale;
-				screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x, mouse_y));
+		case SDLK_LSHIFT:	// Zoom in
+			if (mouse_x < screen->window_width / 2) {
+				mandelbrot->shift_to_mouse(0.5, mouse_x, mouse_y);
+				mandelbrot->zoom(1.5);
+				screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
+			}
+			else {
+				julia->shift_to_mouse(0.5, mouse_x - screen->window_width / 2, mouse_y);
+				julia->zoom(1.5);
+				screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+			}
+			break;
 
-				break;
+		case SDLK_LCTRL:	// Zoom out
+			if (mouse_x < screen->window_width / 2) {
+				mandelbrot->zoom(0.5);
+				screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
+			}
+			else {
+				julia->zoom(0.5);
+				screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+			}
+			break;
+
+		case SDLK_PLUS:
+			if (mouse_x < screen->window_width / 2) {
+				mandelbrot->iterations *= 2;
+				screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
+			}
+			else {
+				julia->iterations *= 2;
+				screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+			}
+			break;
+
+		case SDLK_MINUS:
+			if (mouse_x < screen->window_width / 2) {
+				if (mandelbrot->iterations > 1) {
+					mandelbrot->iterations /= 2;
+					screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
+				}
+			}
+			else {
+				if (julia->iterations > 1) {
+					julia->iterations /= 2;
+					screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+				}
+			}
+			break;
+
+		case SDLK_9:		// Stop rendering continuous
+			continuous_rendering = false;
+			break;
+
+		case SDLK_0:		// Render continuous
+			continuous_rendering = true;
+			julia->set_new_time();
+			break;
 		default:
 			break;
 		}
-
-		//if (event.key.keysym.sym == SDLK_MINUS) {
 		break;
 
-
-
-	case SDL_QUIT:
-		running = false;
-		break;
-	default:
-		break;
+		case SDL_QUIT:
+			running = false;
+			break;
+		default:
+			break;
 	}
 
+
 	if (continuous_rendering) {
-		screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000, 0, 1000));
-		screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x, mouse_y));
+		screen->draw(0, 64);
+		//screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000, 0, 1000));
+		//screen->draw(1000, julia->julia_set(1, 1000, 2000, 0, 0));
 	}
 	
 
