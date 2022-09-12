@@ -1,23 +1,22 @@
-#include "Window.h"
+//#include "Event_Handler.h"
 #include "iostream"
+#include "Engine.h"
 
 
 #define WIN_WIDTH 2000
 #define WIN_HEIGHT 1000
 
-Window* window = nullptr;
+Engine* engine = nullptr;
 
 
 
 int main(int argc, char* argv[]) {
 	
-	window = new Window(WIN_WIDTH, WIN_HEIGHT);
+	engine = new Engine(WIN_WIDTH, WIN_HEIGHT);
 
-	while (window->running) {
-		window->draw();
+	while (engine->running) {
+		engine->events();
 	}
-	window->clean_up();
-
-	delete(window);
+	delete(engine);
 	return 0;
 }

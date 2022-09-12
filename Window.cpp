@@ -5,31 +5,33 @@
 #define MAX_HEIGHT 1080
 
 #define DEBUG
-void draw_helper(int x0, int x1, uint8_t* pixelArray, int** draw_matrix, int iterations, SDL_Surface* screen);
+void draw_helper(int x0, int x1, int y_height, uint8_t* pixelArray, int** draw_matrix, int iterations, SDL_Surface* screen);
 
 double cube(double x) {
 	return x * x;
 }
 
-Window::Window(int width, int height) {
+Window::Window(int width, int height, int** matrix, int render_threads) {
 
-	if (width > MAX_WIDTH) window_width = MAX_WIDTH;	// Init window width
-	else window_width = width;							
+	window_width = width;
 	
-	if (height > MAX_HEIGHT) window_height = MAX_HEIGHT;// Init window height
-	else window_height = height;
-	
+	window_height = height;
+
 	last_time = std::chrono::system_clock::now();		// FPS clock
 
-	pixel_matrix = new int* [MAX_WIDTH];				// Creates a matrix for all pixels
-	for (int i = 0; i < MAX_WIDTH; i++)
-		pixel_matrix[i] = new int[MAX_HEIGHT];
+	pixel_matrix = matrix;
 
 	text = new SDL_Text(20);							// Init text display
 
-	julia = new Julia(pixel_matrix);					// Init julia fractal
+	render_ths = render_threads;
 
-	running = Window::init_window(window_width, window_height);		// Init window
+	Window::init_window(window_width, window_height);		// Init window
+}
+
+Window::~Window() {
+
+	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(renderer);
 }
 
 void Window::display_fps(int x, int y) {
@@ -67,17 +69,13 @@ bool Window::init_window(int width, int height) {
 	return false;
 }
 
-void Window::draw() {
-
-	int iterations = julia->julia_set(1, 0, 1000, 0, 1000);		// Draw a julia set at 0,0 1000x1000 with MT
-	draw_from_matrix(iterations);								// draw the result
-	Window::display_fps(10, 10);								// display fps counter att 10, 10
-	SDL_UpdateWindowSurface(window);							// draw call
+void Window::draw(int start_x, int iterations) {
+	draw_from_matrix(iterations, start_x);					// draw
+	Window::display_fps(10 + start_x, 10);									// display fps counter att 10, 10
+	SDL_UpdateWindowSurface(window);								// draw call
 }
 
-#define RENDER_THs 10
-
-void Window::draw_from_matrix(int iterations) {
+void Window::draw_from_matrix(int iterations, int x_start) {
 
 	int n;
 
@@ -86,13 +84,12 @@ void Window::draw_from_matrix(int iterations) {
 	SDL_LockSurface(screen);
 	uint8_t* pixelArray = (uint8_t*)screen->pixels;
 
-
 	//TODO: Make the funtion general
-	for (int i = 0; i < RENDER_THs; i++) {
-		threads[i] = new std::thread(draw_helper, i * 1000 / RENDER_THs, (i + 1) * 1000 / RENDER_THs, pixelArray, pixel_matrix, iterations, screen);
+	for (int i = 0; i < render_ths; i++) {
+		threads[i] = new std::thread(draw_helper, i * 1000 / render_ths + x_start, (i + 1) * 1000 / render_ths + x_start, window_height, pixelArray, pixel_matrix, iterations, screen);
 	}
 
-	for (int i = 0; i < RENDER_THs; i++) {
+	for (int i = 0; i < render_ths; i++) {
 		threads[i]->join();
 		delete(threads[i]);
 	}
@@ -101,17 +98,15 @@ void Window::draw_from_matrix(int iterations) {
 
 }
 
-void draw_helper(int x0, int x1, uint8_t* pixelArray, int** draw_matrix, int iterations, SDL_Surface* screen) {
+void draw_helper(int x0, int x1, int y_height, uint8_t* pixelArray, int** draw_matrix, int iterations, SDL_Surface* screen) {
 
 	double n;
 
 	for (int x = x0; x < x1; x++) {
-		for (int y = 0; y < 1000; y++) {
+		for (int y = 0; y < y_height; y++) {
 			n = draw_matrix[x][y];
 			if (n != iterations) {
-
 				n = sqrt(n);
-
 				pixelArray[y * screen->pitch + x * screen->format->BytesPerPixel + 0] = cube((cos(n + 100))) * 255; // B
 				pixelArray[y * screen->pitch + x * screen->format->BytesPerPixel + 1] = cube((cos(n+ 50))) * 255;	 // G
 				pixelArray[y * screen->pitch + x * screen->format->BytesPerPixel + 2] = cube((cos(n))) * 255; 		 // R
@@ -123,23 +118,4 @@ void draw_helper(int x0, int x1, uint8_t* pixelArray, int** draw_matrix, int ite
 			}
 		}
 	}
-}
-
-void Window::clean_up() {
-
-	delete(julia);
-
-	for (int i = 0; i < 1000; i++) {
-		delete(pixel_matrix[i]);
-	}
-	delete(pixel_matrix);
-
-	delete(threads);
-
-	SDL_DestroyWindow(window);
-	SDL_DestroyRenderer(renderer);
-	SDL_Quit();
-#ifdef DEBUG
-	std::cout << "Program closed" << std::endl;
-#endif // DEBUG
 }

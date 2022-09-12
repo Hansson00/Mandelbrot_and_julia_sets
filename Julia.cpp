@@ -28,8 +28,8 @@ int Julia::julia_set(int type, int start_x, int stop_x, int start_y, int stop_y)
 
 	double constant = 0.7885;
 
-	long double x_const = constant * cos(duration.count() / 10);
-	long double y_const = constant * sin(duration.count() / 10);
+	long double x_const = constant * cos(duration.count() / 20);
+	long double y_const = constant * sin(duration.count() / 20);
 
 	switch (type)
 	{
@@ -50,12 +50,12 @@ int Julia::julia_set(int type, int start_x, int stop_x, int start_y, int stop_y)
 // TODO: make a struct for all the variables
 void julia_set_SC(int start_x, int stop_x, long double x_min, long double pixel_scale_x, int start_y, int stop_y, long double y_min, long double pixel_scale_y, int iterations, int infinity, int** draw_matrix, double x_const, double y_const) {
 	
-	long double xx = x_min + start_x * pixel_scale_x;
+	long double xx = x_min + (start_x % 1000) * pixel_scale_x;
 	long double yy;
 	long double a, b, twoab, aa, bb;
 
 	for (int x = start_x + 1; x < stop_x + 1; x++) {
-		yy = y_min + start_y * pixel_scale_y;
+		yy = y_min + (start_y % 1000)* pixel_scale_y;
 		for (int y = start_y + 1; y < stop_y + 1; y++) {
 			int n = 0;
 			a = xx;
@@ -68,6 +68,7 @@ void julia_set_SC(int start_x, int stop_x, long double x_min, long double pixel_
 				b = twoab - y_const;
 				n++;
 			} while (n < iterations && aa * aa + bb * bb < infinity);
+			//std::cout << x << " " << y << std::endl;
 			draw_matrix[x - 1][y - 1] = n;
 			yy += pixel_scale_y;
 		}
@@ -79,7 +80,7 @@ void Julia::julia_set_MC(int start_x, int stop_x, int start_y, int stop_y, long 
 
 	for (int x = 0; x < GRID; x++) {
 		for (int y = 0; y < GRID; y++) {
-			threads[y * GRID + x] = new std::thread(julia_set_SC, x * (1000 / GRID), (x + 1) * 1000 / GRID, x_min, x_pixel_scale, y * (1000 / GRID), (y + 1) * 1000 / GRID, y_min, y_pixel_scale, iterations, infinity, pixel_matrix, x_const, y_const);
+			threads[y * GRID + x] = new std::thread(julia_set_SC, x * (1000 / GRID) + start_x, (x + 1) * 1000 / GRID + stop_x - start_x, x_min, x_pixel_scale, y * (1000 / GRID), (y + 1) * 1000 / GRID, y_min, y_pixel_scale, iterations, infinity, pixel_matrix, x_const, y_const);
 		}
 	}
 

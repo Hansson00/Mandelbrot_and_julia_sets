@@ -2,9 +2,10 @@
 #include "chrono"
 #include "tgmath.h"
 #include "thread"
+#include "iostream"
 
 # define M_PI	3.14159265358979323846
-# define GRID	5
+# define GRID	4
 
 
 class Julia
