@@ -33,6 +33,10 @@ Engine::Engine(int width, int height) {
 
 	running = true;
 
+	screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000, 0, 1000));
+	screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x, mouse_y));
+
+
 }
 
 Engine::~Engine() {
@@ -56,9 +60,15 @@ void Engine::events() {
 		switch (event.button.button)
 		{
 			case SDL_BUTTON_LEFT:
-				SDL_GetMouseState(&mouse_x, &mouse_y);
 
-				std::cout << "Left mb \n";
+				int x, y;
+
+				SDL_GetMouseState(&x, &y);
+
+				mouse_x = mandelbrot->x_min + x * mandelbrot->x_pixel_scale;
+				mouse_y = mandelbrot->y_min + y * mandelbrot->y_pixel_scale;
+				screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x, mouse_y));
+
 				break;
 		default:
 			break;

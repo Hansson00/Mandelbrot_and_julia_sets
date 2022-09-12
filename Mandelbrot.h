@@ -11,12 +11,13 @@ public:
 
 	Mandelbrot(int** matrix);
 	int mandelbrot_set(int type, int x_start, int x_stop, int y_start, int y_stop);
-
-private:
-
 	double x_min, y_min;
 	double x_distance, y_distance;
 	double x_pixel_scale, y_pixel_scale;
+
+
+private:
+
 	int iterations;
 	int infinity;
 	int** pixel_matrix;

@@ -14,7 +14,7 @@ class Julia
 public:
 
 	Julia(int** matrix);
-	int julia_set(int type, int x_start, int x_stop, int y_start, int y_stop);
+	int julia_set(int type, int x_start, int x_stop, double y_start, double y_stop);
 
 private:
 	

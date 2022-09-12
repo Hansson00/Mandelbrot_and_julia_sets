@@ -16,7 +16,7 @@ private:
 	double mouse_x = 0;
 	double mouse_y = 0;
 
-	bool continuous_rendering = true;
+	bool continuous_rendering = false;
 	Window* screen;
 	Julia* julia;
 	Mandelbrot* mandelbrot;

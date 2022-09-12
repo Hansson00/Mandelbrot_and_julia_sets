@@ -21,7 +21,7 @@ Julia::Julia(int** matrix)
 	clock = std::chrono::system_clock::now();
 }
 
-int Julia::julia_set(int type, int start_x, int stop_x, int start_y, int stop_y) {
+int Julia::julia_set(int type, int start_x, int stop_x, double start_y, double stop_y) {
 
 	std::chrono::system_clock::time_point point = std::chrono::system_clock::now();
 	std::chrono::duration<float> duration = point - clock;
