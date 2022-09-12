@@ -34,11 +34,17 @@ int Julia::julia_set(int type, int start_x, int stop_x, int start_y, int stop_y)
 	switch (type)
 	{
 	case 0:
-		julia_set_SC(start_x, stop_x, x_min, x_pixel_scale, start_y, stop_y, y_min, y_pixel_scale, iterations, infinity, pixel_matrix, x_const, y_const);
+		julia_set_SC(start_x, stop_x, x_min, x_pixel_scale, 0, 1000, y_min, y_pixel_scale, iterations, infinity, pixel_matrix, x_const, y_const);
 		break;
 
 	case 1:
-		julia_set_MC(start_x, stop_x, start_y, stop_y, x_const, y_const);
+		julia_set_MC(start_x, stop_x, 0, 1000, x_const, y_const);
+		break;
+
+	case 2:
+		julia_set_MC(start_x, stop_x, 0, 1000, start_y, stop_y);
+		break;
+
 		break;
 	default:
 		break;
@@ -68,7 +74,6 @@ void julia_set_SC(int start_x, int stop_x, long double x_min, long double pixel_
 				b = twoab - y_const;
 				n++;
 			} while (n < iterations && aa * aa + bb * bb < infinity);
-			//std::cout << x << " " << y << std::endl;
 			draw_matrix[x - 1][y - 1] = n;
 			yy += pixel_scale_y;
 		}

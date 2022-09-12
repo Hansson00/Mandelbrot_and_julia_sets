@@ -29,6 +29,8 @@ Engine::Engine(int width, int height) {
 
 	julia = new Julia(pixel_matrix);
 
+	mandelbrot = new Mandelbrot(pixel_matrix);
+
 	running = true;
 
 }
@@ -40,6 +42,7 @@ Engine::~Engine() {
 			delete(pixel_matrix[i]);
 
 	delete(julia);
+	delete(mandelbrot);
 	delete(screen);
 	delete(pixel_matrix);
 }
@@ -49,6 +52,20 @@ void Engine::events() {
 	SDL_Event event;
 	SDL_PollEvent(&event);
 	switch (event.type) {
+	case SDL_MOUSEBUTTONDOWN:
+		switch (event.button.button)
+		{
+			case SDL_BUTTON_LEFT:
+				SDL_GetMouseState(&mouse_x, &mouse_y);
+
+				std::cout << "Left mb \n";
+				break;
+		default:
+			break;
+		}
+
+		//if (event.key.keysym.sym == SDLK_MINUS) {
+		break;
 
 
 
@@ -60,7 +77,8 @@ void Engine::events() {
 	}
 
 	if (continuous_rendering) {
-		screen->draw(1000, julia->julia_set(1, 1000, 2000, 0, 1000));
+		screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000, 0, 1000));
+		screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x, mouse_y));
 	}
 	
 
