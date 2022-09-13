@@ -19,12 +19,15 @@ public:
 	void zoom(double times);
 	void shift_to_mouse(double times, int x, int y);
 	int iterations;
-
-private:
-	
 	double x_coord, y_coord;
 	double x_distance, y_distance;
 	double x_pixel_scale, y_pixel_scale;
+	double const_x = 0;
+	double const_y = 0;
+
+private:
+	
+	
 	
 	int infinity;
 	int** pixel_matrix;

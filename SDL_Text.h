@@ -10,7 +10,7 @@ public:
 	SDL_Text(int font_size);
 	~SDL_Text();
 
-	void draw_text(std::string str, SDL_Window* window, int x, int y);
+	void draw_text(std::string str, SDL_Surface* s, int x, int y);
 private:
 	TTF_Font* font;
 	unsigned char font_color_r = 255;

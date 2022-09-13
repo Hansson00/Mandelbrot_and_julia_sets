@@ -5,6 +5,8 @@
 #include "string"
 #include "chrono"
 #include "thread"
+#include "Mandelbrot.h"
+#include "Julia.h"
 
 
 
@@ -19,6 +21,8 @@ public:
 	Window(int window_widthm, int window_height, int** matrix, int render_threads);
 	~Window();
 	void draw(int start_x, int julia_iterations);
+	void display_fps(int x, int y, SDL_Surface* s);
+	void display_stats(Mandelbrot* m, Julia* j);
 
 private:
 
@@ -26,13 +30,12 @@ private:
 	int render_ths;
 	int** pixel_matrix;
 	SDL_Window* window;
-	SDL_Renderer* renderer;
 	SDL_Text* text;
 	std::chrono::system_clock::time_point last_time;
 
 	std::thread* threads[25];		//25 ?
 
-	void display_fps(int x, int y);
+	
 
 	bool init_window(int width, int height);
 	

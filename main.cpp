@@ -4,7 +4,7 @@
 
 
 #define WIN_WIDTH 2000
-#define WIN_HEIGHT 1100
+#define WIN_HEIGHT 1025
 
 
 Engine* engine = nullptr;

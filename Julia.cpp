@@ -34,14 +34,21 @@ int Julia::julia_set(int type, int start_x, int stop_x, double start_y, double s
 	switch (type)
 	{
 	case 0:
+
+		const_x = x_const;
+		const_y = y_const;
 		julia_set_SC(start_x, stop_x, x_coord, x_pixel_scale, 0, 1000, y_coord, y_pixel_scale, iterations, infinity, pixel_matrix, x_const, y_const);
 		break;
 
 	case 1:
+		const_x = x_const;
+		const_y = y_const;
 		julia_set_MC(start_x, stop_x, 0, 1000, x_const, y_const);
 		break;
 
 	case 2:
+		const_x = start_y;
+		const_y = stop_y;
 		julia_set_MC(start_x, stop_x, 0, 1000, start_y, stop_y);
 		break;
 

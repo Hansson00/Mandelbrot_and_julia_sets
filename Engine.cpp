@@ -74,24 +74,24 @@ void Engine::events() {
 		case SDLK_LSHIFT:	// Zoom in
 			if (mouse_x < screen->window_width / 2) {
 				mandelbrot->shift_to_mouse(0.5, mouse_x, mouse_y);
-				mandelbrot->zoom(1.5);
+				mandelbrot->zoom(1.25);
 				screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
 			}
 			else {
 				julia->shift_to_mouse(0.5, mouse_x - screen->window_width / 2, mouse_y);
-				julia->zoom(1.5);
-				screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+				julia->zoom(1.25);
+				if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
 			}
 			break;
 
 		case SDLK_LCTRL:	// Zoom out
 			if (mouse_x < screen->window_width / 2) {
-				mandelbrot->zoom(0.5);
+				mandelbrot->zoom(0.75);
 				screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
 			}
 			else {
-				julia->zoom(0.5);
-				screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+				julia->zoom(0.75);
+				if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
 			}
 			break;
 
@@ -102,7 +102,7 @@ void Engine::events() {
 			}
 			else {
 				julia->iterations *= 2;
-				screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+				if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
 			}
 			break;
 
@@ -116,7 +116,7 @@ void Engine::events() {
 			else {
 				if (julia->iterations > 1) {
 					julia->iterations /= 2;
-					screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+					if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
 				}
 			}
 			break;
@@ -143,10 +143,10 @@ void Engine::events() {
 
 
 	if (continuous_rendering) {
-		screen->draw(0, 64);
-		//screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000, 0, 1000));
-		//screen->draw(1000, julia->julia_set(1, 1000, 2000, 0, 0));
+		//screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
+		screen->draw(1000, julia->julia_set(1, 1000, 2000, 0, 0));
 	}
-	
+
+	screen->display_stats(mandelbrot, julia);
 
 }
