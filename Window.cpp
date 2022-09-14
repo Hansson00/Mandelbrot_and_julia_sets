@@ -1,8 +1,8 @@
-#include "Window.h"
+﻿#include "Window.h"
 
 
-#define MAX_WIDTH 2000
-#define MAX_HEIGHT 1025
+#define MAX_WIDTH 2560
+#define MAX_HEIGHT 1440
 #define STATS_HEIGHT 25
 
 
@@ -83,46 +83,57 @@ void Window::display_stats(Mandelbrot* m, Julia* j) {
 
 	
 	SDL_Surface* poggers = SDL_CreateRGBSurface(0, window_width, 25, 32, 0, 0, 0, 0);
-
-
+	Window::display_fps(5, 0, poggers);
+	std::string str = "Coordinates: ";
 	if (m != nullptr) {
-		if (j != nullptr) {
-			Window::display_fps(5, 0, poggers);
-			std::string str = "Coordinates: ";
-			str.append(std::to_string((float)m->x_coord));
-			str.append("x, ");
-			str.append(std::to_string((float)m->y_coord));
-			str.append("y  Zoom: ");
-			zoom_display((3.0 / m->x_distance), &str);
-			str.append("  Iterations: ");
-			str.append(std::to_string(m->iterations));
-			text->draw_text(str, poggers, 100, 0);
 
-			str = "Coordinates: ";
-			str.append(std::to_string((float)j->x_coord));
-			str.append("x, ");
-			str.append(std::to_string((float)j->y_coord));
-			str.append("y  Zoom: ");
-			zoom_display((3.0 / j->x_distance), &str);
-			str.append("  Iterations: ");
-			str.append(std::to_string(j->iterations));
-			str.append("  Constant: ");
-			str.append(std::to_string((float)j->const_x));
-			str.append("x, ");
-			str.append(std::to_string((float)-j->const_y));
-			str.append("y");
-			text->draw_text(str, poggers, 1000, 0);
-		}
-		else {
-			// If mandelbrot only :) TODO
-		}
+		str.append(std::to_string((float)m->x_coord));
+		str.append("x, ");
+		str.append(std::to_string((float)m->y_coord));
+		str.append("y  Zoom: ");
+		zoom_display((3.0 / m->x_distance), &str);
+		str.append("x  Iterations: ");
+		str.append(std::to_string(m->iterations));
+		str.append("  Threads: ");
+		str.append(std::to_string(m->get_wanted_threads()));
+		str.append("(");
+		str.append(std::to_string(m->get_threads(0)));
+		str.append("x");
+		str.append(std::to_string(m->get_threads(1)));
+		str.append(")");
+		text->draw_text(str, poggers, 100, 0);
+		
+
 	}
-	else {
-		// If julia only :) TODO
+	if (j != nullptr) {
+		
+		str = "Coordinates: ";
+		str.append(std::to_string((float)j->x_coord));
+		str.append("x, ");
+		str.append(std::to_string((float)j->y_coord));
+		str.append("y  Zoom: ");
+		zoom_display((3.0 / j->x_distance), &str);
+		str.append("  Iterations: ");
+		str.append(std::to_string(j->iterations));
+		str.append("  Threads: ");
+		str.append(std::to_string(j->get_wanted_threads()));
+		str.append("(");
+		str.append(std::to_string(j->get_threads(0)));
+		str.append("x");
+		str.append(std::to_string(j->get_threads(1)));
+		str.append(")");
+		str.append("  Constant: ");
+		str.append(std::to_string((float)j->const_x));
+		str.append("x, ");
+		str.append(std::to_string((float)-j->const_y));
+		str.append("y");
+		text->draw_text(str, poggers, 800, 0);
+
+		
 	}
 
 	SDL_Surface* screen = SDL_GetWindowSurface(window);
-	SDL_Rect rect = { 0, 975, 0, 0 };
+	SDL_Rect rect = { 0, window_height- STATS_HEIGHT, 0, 0 };
 
 	SDL_BlitSurface(poggers, NULL, screen, &rect);
 
@@ -143,12 +154,12 @@ bool Window::init_window(int width, int height) {
 	return false;
 }
 
-void Window::draw(int start_x, int iterations) {
-	draw_from_matrix(iterations, start_x);					// draw
+void Window::draw(int iterations, Drawable* win) {
+	draw_from_matrix(iterations, win);					// draw
 	SDL_UpdateWindowSurface(window);						// draw call
 }
 
-void Window::draw_from_matrix(int iterations, int x_start) {
+void Window::draw_from_matrix(int iterations, Drawable* win) {
 
 	SDL_Surface* screen = SDL_GetWindowSurface(window);
 
@@ -157,7 +168,7 @@ void Window::draw_from_matrix(int iterations, int x_start) {
 
 	//TODO: Make the funtion general
 	for (int i = 0; i < render_ths; i++) {
-		threads[i] = new std::thread(draw_helper, i * 1000 / render_ths + x_start, (i + 1) * 1000 / render_ths + x_start, window_height-STATS_HEIGHT, pixelArray, pixel_matrix, iterations, screen);
+		threads[i] = new std::thread(draw_helper, i * win->width / render_ths + win->start_x, (i + 1) * win->width / render_ths + win->start_x, window_height, pixelArray, pixel_matrix, iterations, screen);
 	}
 
 	for (int i = 0; i < render_ths; i++) {

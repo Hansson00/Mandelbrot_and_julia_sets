@@ -149,6 +149,7 @@
     <ClCompile Include="Julia.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mandelbrot.cpp" />
+    <ClCompile Include="Positionable.cpp" />
     <ClCompile Include="SDL_Text.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -156,6 +157,7 @@
     <ClInclude Include="Engine.h" />
     <ClInclude Include="Julia.h" />
     <ClInclude Include="Mandelbrot.h" />
+    <ClInclude Include="Positionable.h" />
     <ClInclude Include="SDL_Text.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>

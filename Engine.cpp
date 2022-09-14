@@ -1,10 +1,10 @@
 #include "Engine.h"
+#
 
+#define MAX_WIDTH 2560
+#define MAX_HEIGHT 1440
 
-#define MAX_WIDTH 2000
-#define MAX_HEIGHT 1000
-
-Engine::Engine(int width, int height) {
+Engine::Engine(int width, int height, int fractals) {
 
 	int window_width, window_height;
 
@@ -14,9 +14,7 @@ Engine::Engine(int width, int height) {
 	if (height > MAX_HEIGHT) window_height = MAX_HEIGHT;// Init window height
 	else window_height = height;
 
-	SDL_Init(SDL_INIT_EVERYTHING);
-
-	pixel_matrix = new int* [MAX_WIDTH];				// Creates a matrix for all pixels
+		pixel_matrix = new int* [MAX_WIDTH];				// Creates a matrix for all pixels
 	for (int i = 0; i < MAX_WIDTH; i++) {
 		pixel_matrix[i] = new int[MAX_HEIGHT];
 		for (int j = 0; j < MAX_HEIGHT; j++) {
@@ -26,15 +24,12 @@ Engine::Engine(int width, int height) {
 
 	screen = new Window(window_width, window_height, pixel_matrix, 10);
 
-	julia = new Julia(pixel_matrix);
+	//mandelbrot = new Mandelbrot(pixel_matrix, 500, 1500, 0, window_height);
+	//screen->draw(mandelbrot->mandelbrot_set(1), mandelbrot);
 
-	mandelbrot = new Mandelbrot(pixel_matrix);
-
+	julia = new Julia(pixel_matrix, 0, window_width, 0, window_height);
+	screen->draw(julia->julia_set(8), julia);
 	running = true;
-
-	screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
-	screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
-
 
 }
 
@@ -58,11 +53,11 @@ void Engine::events() {
 	
 	int mouse_x, mouse_y;
 	if (SDL_GetMouseState(&mouse_x, &mouse_y) & SDL_BUTTON_LEFT != 0) { //Checks if left mb is pressed
-		continuous_rendering = false;
-
-		mouse_x_coord = mandelbrot->x_coord + mandelbrot->x_pixel_scale * (mouse_x - 500);
-		mouse_y_coord = mandelbrot->y_coord + mandelbrot->y_pixel_scale * (mouse_y - 500);
-		screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+		//continuous_rendering = false;
+		std::cout << "mouse: " << mouse_x << ", " << mouse_y << std::endl;
+		//mouse_x_coord = mandelbrot->x_coord + mandelbrot->x_pixel_scale * (mouse_x - 500);
+		//mouse_y_coord = mandelbrot->y_coord + mandelbrot->y_pixel_scale * (mouse_y - 500);
+		//screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
 	}
 	
 	switch (event.type) {
@@ -72,53 +67,50 @@ void Engine::events() {
 		switch (event.key.keysym.sym) {
 
 		case SDLK_LSHIFT:	// Zoom in
-			if (mouse_x < screen->window_width / 2) {
-				mandelbrot->shift_to_mouse(0.5, mouse_x, mouse_y);
-				mandelbrot->zoom(1.25);
-				screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
-			}
-			else {
+			continuous_rendering = false;
+			mandelbrot->shift_to_mouse(0.5, mouse_x, mouse_y);
+			mandelbrot->zoom(1.25);
+			screen->draw(mandelbrot->mandelbrot_set(0), mandelbrot);
+			
+			/*else {
 				julia->shift_to_mouse(0.5, mouse_x - screen->window_width / 2, mouse_y);
 				julia->zoom(1.25);
-				if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
-			}
+				//if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+			}*/
 			break;
 
 		case SDLK_LCTRL:	// Zoom out
-			if (mouse_x < screen->window_width / 2) {
-				mandelbrot->zoom(0.75);
-				screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
-			}
-			else {
+			continuous_rendering = false;
+			mandelbrot->zoom(0.75);
+			screen->draw(mandelbrot->mandelbrot_set(0), mandelbrot);
+			
+			/*else {
 				julia->zoom(0.75);
-				if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
-			}
+				//if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+			}*/
 			break;
 
 		case SDLK_PLUS:
-			if (mouse_x < screen->window_width / 2) {
-				mandelbrot->iterations *= 2;
-				screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
-			}
-			else {
-				julia->iterations *= 2;
-				if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
-			}
+			continuous_rendering = false;
+			mandelbrot->iterations *= 2;
+			screen->draw(mandelbrot->mandelbrot_set(0), mandelbrot);
+			
 			break;
 
 		case SDLK_MINUS:
-			if (mouse_x < screen->window_width / 2) {
-				if (mandelbrot->iterations > 1) {
-					mandelbrot->iterations /= 2;
-					screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
-				}
+			continuous_rendering = false;
+			if (mandelbrot->iterations > 1) {
+				mandelbrot->iterations /= 2;
+				screen->draw(mandelbrot->mandelbrot_set(0), mandelbrot);
 			}
-			else {
-				if (julia->iterations > 1) {
-					julia->iterations /= 2;
-					if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
-				}
-			}
+		case SDLK_PAGEUP:
+			//mandelbrot->add_threads(1);
+			julia->add_threads(1);
+			break;
+
+		case SDLK_PAGEDOWN:
+			//mandelbrot->add_threads(-1);
+			julia->add_threads(-1);
 			break;
 
 		case SDLK_9:		// Stop rendering continuous
@@ -127,7 +119,6 @@ void Engine::events() {
 
 		case SDLK_0:		// Render continuous
 			continuous_rendering = true;
-			julia->set_new_time();
 			break;
 		default:
 			break;
@@ -143,10 +134,10 @@ void Engine::events() {
 
 
 	if (continuous_rendering) {
-		//screen->draw(0, mandelbrot->mandelbrot_set(1, 0, 1000));
-		screen->draw(1000, julia->julia_set(1, 1000, 2000, 0, 0));
+		screen->draw(julia->julia_set(1), julia);
+		//mandelbrot->mandelbrot_set(0);
 	}
-
-	screen->display_stats(mandelbrot, julia);
+	
+	screen->display_stats(nullptr, julia);
 
 }

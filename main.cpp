@@ -4,16 +4,14 @@
 
 
 #define WIN_WIDTH 2000
-#define WIN_HEIGHT 1025
+#define WIN_HEIGHT 1000
 
 
 Engine* engine = nullptr;
 
-
-
 int main(int argc, char* argv[]) {
 	
-	engine = new Engine(WIN_WIDTH, WIN_HEIGHT);
+	engine = new Engine(WIN_WIDTH, WIN_HEIGHT, 2);
 
 	while (engine->running) {
 		engine->events();

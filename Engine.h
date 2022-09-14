@@ -7,7 +7,7 @@
 
 class Engine {
 public:
-	Engine(int width, int height);
+	Engine(int width, int height, int fractals);
 	~Engine();
 	bool running;
 	void events();
@@ -20,6 +20,7 @@ private:
 	Window* screen;
 	Julia* julia;
 	Mandelbrot* mandelbrot;
+	Mandelbrot* mandelbrot1;
 	int** pixel_matrix;
 };
 

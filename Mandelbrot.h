@@ -2,31 +2,34 @@
 #include "tgmath.h"
 #include "thread"
 #include "iostream"
+#include "Positionable.h"
 
-# define GRID	5
+# define MAX_THREADS	25
 
 
-class Mandelbrot {
+class Mandelbrot : public Drawable , public Positionable {
 
 public:
 
-	Mandelbrot(int** matrix);
-	int mandelbrot_set(int type, int x_start, int x_stop);
-	double x_coord, y_coord;
-	double x_distance, y_distance;
-	double x_pixel_scale, y_pixel_scale;
+	Mandelbrot(int** matrix, int x_start, int x_stop, int y_start, int y_stop);
+	int mandelbrot_set(int type);
+	int infinity;
 	int iterations;
+	
+
 	void zoom(long double times);
 	void shift_to_mouse(long double times, int x, int y);
+	void add_threads(int n);
+	int get_threads(int i);
+	int get_wanted_threads();
 
 private:
-
-	
-	int infinity;
-	int** pixel_matrix;
-	std::thread* threads[GRID * GRID];
-
-	void mandelbrot_set_MC(int start_x, int stop_x, int start_y, int stop_y);
-
+	int threads;
+	int current_ths = 1;
+	int th_x = 1;
+	int th_y = 1;
+	void mandelbrot_set_MC();
+	void thread_pattern();
+	std::thread* thread_arr[MAX_THREADS];
 };
 

@@ -1,36 +1,28 @@
 #include "Mandelbrot.h"
 
 
-void mandelbrot_set_SC(int start_x, int stop_x, long double x_coord, long double pixel_scale_x, int start_y, int stop_y, long double y_coord, long double pixel_scale_y, int iterations, int infinity, int** draw_matrix);
+//void mandelbrot_set_SC(int start_x, int stop_x, long double x_coord, long double pixel_scale_x, int start_y, int stop_y, long double y_coord, long double pixel_scale_y, int iterations, int infinity, int** draw_matrix);
 
-Mandelbrot::Mandelbrot(int** matrix)
-{
-	x_coord = -0.5;
-	y_coord = 0;
+void mandelbrot_set_SC_new1(Positionable* pos, int x_x, int y_y, int start_x, int stop_x, int start_y, int stop_y, int** pixel_matrix, int iterations, int infinity);
 
-	x_distance = 3;
-	y_distance = 3;
+void mandelbrot_set_SC_new(Positionable* pos, Drawable* window, int iterations, int infinity);
 
-	x_pixel_scale = x_distance / 1000; // should be /window size
-	y_pixel_scale = y_distance / 1000;
+Mandelbrot::Mandelbrot(int** matrix, int x_start, int x_stop, int y_start, int y_stop)
+	: Drawable(x_start, x_stop, y_start, y_stop, matrix),
+	  Positionable(-0.5, 0, x_stop-x_start, y_stop-y_start) {
 
 	iterations = 64;
-	infinity = 16;
-
-	pixel_matrix = matrix;
+	infinity = 32;
+	threads = 1;
+	thread_pattern();
 }
 
-int Mandelbrot::mandelbrot_set(int type, int start_x, int stop_x) {
+int Mandelbrot::mandelbrot_set(int type) {
 
 	switch (type) {
-	case 0:
-		mandelbrot_set_SC(start_x, stop_x, x_coord, x_pixel_scale, 0, 1000, y_coord, y_pixel_scale, iterations, infinity, pixel_matrix);
-		break;
 
-	case 1:
-		mandelbrot_set_MC(start_x, stop_x, 0, 1000);
-		break;
 	default:
+		mandelbrot_set_MC();
 		break;
 	}
 
@@ -40,27 +32,90 @@ int Mandelbrot::mandelbrot_set(int type, int start_x, int stop_x) {
 void Mandelbrot::zoom(long double times) {
 	x_distance /= times;
 	y_distance /= times;
-	x_pixel_scale = x_distance / 1000;	//Window_width
-	y_pixel_scale = y_distance / 1000;	//Window_width
+	x_pixel_scale = x_distance / fractal_space_x;
+	y_pixel_scale = y_distance / fractal_space_y;
+	x_min = x_coord - fractal_space_x / 2 * x_pixel_scale;
+	y_min = y_coord - fractal_space_y / 2 * y_pixel_scale;
 }
 
 void Mandelbrot::shift_to_mouse(long double times, int x, int y) {
 	
-	x_coord += (x - 500) * x_pixel_scale * times;
-	y_coord += (y - 500) * y_pixel_scale * times;
+	x_coord += (x - start_x -  width/2) * x_pixel_scale * times;
+	y_coord += (y - start_y - height/2) * y_pixel_scale * times;
 
 }
 
-void mandelbrot_set_SC(int start_x, int stop_x, long double x_min, long double pixel_scale_x, int start_y, int stop_y, long double y_min, long double pixel_scale_y, int iterations, int infinity, int** draw_matrix) {
+void Mandelbrot::add_threads(int n){
+	if (threads + n <= MAX_THREADS && threads + n >= 1) 
+		threads += n;
+	
+	thread_pattern();
+}
 
-	double xx = x_min - 500* pixel_scale_x + (start_x % 1000) * pixel_scale_x;
+
+void Mandelbrot::thread_pattern() {
+
+	int max = 1;
+	th_x = 1;
+	th_y = 1;
+
+	for (int i = 1; i <= std::min((int)(sqrt(MAX_THREADS)), threads); i++) {
+		for (int j = 1; j <= i; j++) {
+			if (i * j <= MAX_THREADS && i * j > max && i * j <= threads) {
+				if (this->width % i == 0 && this->height % j == 0) {
+					max = i * j;
+					th_x = i;
+					th_y = j;
+				}
+			}		
+		}
+	}
+	current_ths = max;
+}
+
+int Mandelbrot::get_threads(int i) {
+	if (i == 0) {
+		return th_x;
+	}
+	else {
+		return th_y;
+	}
+	
+}
+
+int Mandelbrot::get_wanted_threads() {
+	return threads;
+}
+
+void Mandelbrot::mandelbrot_set_MC() {
+	int i = 0;
+	for (int x = 0; x < th_x; x++) {
+		for (int y = 0; y < th_y; y++) {
+			thread_arr[i] = new std::thread(mandelbrot_set_SC_new1, this, x * fractal_space_x / th_x, y * fractal_space_y / th_y, this->start_x + x * this->width / th_x, this->start_x + (x + 1) * this->width / th_x,
+				this->start_y + y * this->height / th_y, this->start_y + (y + 1) * this->height / th_y, pixel_matrix, iterations, infinity);
+			i++;
+		}
+	}
+
+	for (int x = 0; x < i; x++) {
+
+		thread_arr[x]->join();
+		delete(thread_arr[x]);
+
+	}
+}
+
+void mandelbrot_set_SC_new(Positionable* pos, Drawable* window, int iterations, int infinity) {
+
+	double xx = pos->x_min + window->start_x * pos->x_pixel_scale;
 	double yy;
 	double a, b, twoab, aa, bb;
+	int n;
 
-	for (int x = start_x + 1; x < stop_x + 1; x++) {
-		yy = y_min - 500 * pixel_scale_y + (start_y % 1000) * pixel_scale_y;
-		for (int y = start_y + 1; y < stop_y + 1; y++) {
-			int n = 0;
+	for (int x = window->start_x; x < window->stop_x; x++) {
+		yy = pos->y_min + window->start_y * pos->y_pixel_scale;
+		for (int y = window->start_y; y < window->stop_y; y++) {
+			n = 0;
 			a = xx;
 			b = yy;
 			do {
@@ -71,22 +126,38 @@ void mandelbrot_set_SC(int start_x, int stop_x, long double x_min, long double p
 				b = twoab + yy;
 				n++;
 			} while (n < iterations && aa * aa + bb * bb < infinity);
-			draw_matrix[x - 1][y - 1] = n;
-			yy += pixel_scale_y;
+			window->pixel_matrix[x][y] = n;
+			yy += pos->y_pixel_scale;
 		}
-		xx += pixel_scale_x;
+		xx += pos->x_pixel_scale;
 	}
+
 }
 
-void Mandelbrot::mandelbrot_set_MC(int start_x, int stop_x, int start_y, int stop_y) {
+void mandelbrot_set_SC_new1(Positionable* pos, int x_x, int y_y, int start_x, int stop_x, int start_y, int stop_y,int ** pixel_matrix, int iterations, int infinity) {
+	double xx = pos->x_min + x_x * pos->x_pixel_scale;
+	double yy;
+	double a, b, twoab, aa, bb;
+	int n;
 
-	for (int x = 0; x < GRID; x++) {
-		for (int y = 0; y < GRID; y++) {
-			threads[y * GRID + x] = new std::thread(mandelbrot_set_SC, x * (1000 / GRID) + start_x, (x + 1) * 1000 / GRID + stop_x - start_x, x_coord, x_pixel_scale, y * (1000 / GRID), (y + 1) * 1000 / GRID, y_coord, y_pixel_scale, iterations, infinity, pixel_matrix);
+	for (int x = start_x; x < stop_x; x++) {
+		yy = pos->y_min + y_y * pos->y_pixel_scale;
+		for (int y = start_y; y < stop_y; y++) {
+			n = 0;
+			a = xx;
+			b = yy;
+			do {
+				aa = a * a;
+				bb = b * b;
+				twoab = 2.0 * a * b;
+				a = aa - bb + xx;
+				b = twoab + yy;
+				n++;
+			} while (n < iterations && aa * aa + bb * bb < infinity);
+			pixel_matrix[x][y] = n;
+			yy += pos->y_pixel_scale;
 		}
+		xx += pos->x_pixel_scale;
 	}
-	for (int i = 0; i < GRID * GRID; i++) {
-		threads[i]->join();
-		delete(threads[i]);
-	}
+
 }
