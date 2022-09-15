@@ -11,7 +11,8 @@ class Fractal : public Drawable, public Positionable, public Threading{
 
 public:
 	Fractal(std::string str, int** matrix, int x_start, int x_stop, int y_start, int y_stop, double x_coord);
-	
+	~Fractal();
+
 	int infinity;
 	int iterations;
 

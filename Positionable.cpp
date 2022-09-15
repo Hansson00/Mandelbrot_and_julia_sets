@@ -65,7 +65,6 @@ Threading::Threading(int threads, int width, int height) {
 }
 
 Threading::~Threading() {
-	delete(thread_arr);
 }
 
 void Threading::add_threads(int n) {

@@ -11,7 +11,7 @@
 Engine* engine = nullptr;
 
 int main(int argc, char* argv[]) {
-	
+
 	engine = new Engine(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
 
 	while (engine->running) {

@@ -15,6 +15,9 @@ Threading(1, x_stop - x_start, y_stop - y_start){
 	infinity = 32;
 }
 
+Fractal::~Fractal() {
+}
+
 void Fractal::shift_to_mouse(long double times, int x, int y) {
 	x_coord += (x - start_x - Drawable::width / 2) * x_pixel_scale * times;
 	y_coord += (y - start_y - Drawable::height / 2) * y_pixel_scale * times;

@@ -191,7 +191,7 @@ void Engine::events() {
 	}
 
 
-	if (continuous_rendering) {
+	if (continuous_rendering && running) {
 
 		if(mandelbrot != nullptr)
 			screen->draw(mandelbrot->run_fractal(), mandelbrot);
@@ -200,7 +200,7 @@ void Engine::events() {
 
 	}
 
-	if (show_julia) {
+	if (show_julia && running) {
 		if (julia != nullptr) {
 			std::chrono::system_clock::time_point point = std::chrono::system_clock::now();
 			std::chrono::duration<float> duration = point - clock;
