@@ -7,7 +7,7 @@ SDL_Text::SDL_Text(int size) {
         return;
     }
             
-    font = TTF_OpenFont("./fonts/raleway/Raleway-SemiBold.ttf", size);
+    font = TTF_OpenFont("./fonts/raleway/Raleway-Bold.ttf", size);
     if (font == nullptr) {
         std::cout << "Error with font...\n";
         return;

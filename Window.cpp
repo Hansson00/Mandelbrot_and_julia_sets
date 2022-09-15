@@ -1,11 +1,5 @@
 ﻿#include "Window.h"
 
-
-#define MAX_WIDTH 2560
-#define MAX_HEIGHT 1440
-#define STATS_HEIGHT 25
-
-
 #define DEBUG
 void draw_helper(int x0, int x1, int y_height, uint8_t* pixelArray, int** draw_matrix, int iterations, SDL_Surface* screen);
 
@@ -23,11 +17,11 @@ Window::Window(int width, int height, int** matrix, int render_threads) {
 
 	pixel_matrix = matrix;
 
-	text = new SDL_Text(20);							// Init text display
+	text = new SDL_Text(16);							// Init text display
 
 	render_ths = render_threads;
 
-	Window::init_window(window_width, window_height);		// Init window
+	Window::init_window(window_width, window_height);	// Init window
 }
 
 Window::~Window() {
@@ -48,13 +42,14 @@ void Window::display_fps(int x, int y, SDL_Surface* s) {
 	if (i > 4) {
 		i = 0;
 		smooth_fps = delta_t / 5;
-		if (smooth_fps > 200) smooth_fps = 200;
 		delta_t = 0;
 	}
 	delta_t += (int) 1 / duration.count();
 	i++;
 	std::string fps_counter = "FPS: ";
-	fps_counter.append(std::to_string(smooth_fps));
+	
+	if (smooth_fps > 200) fps_counter.append("NaN");
+	else fps_counter.append(std::to_string(smooth_fps));
 	text->draw_text(fps_counter, s, x, y);
 }
 
@@ -79,9 +74,8 @@ void zoom_display(double zoom, std::string * str) {
 	return;
 }
 
-void Window::display_stats(Mandelbrot* m, Julia* j) {
+void Window::display_stats(Fractal* m, Fractal* j) {
 
-	
 	SDL_Surface* poggers = SDL_CreateRGBSurface(0, window_width, 25, 32, 0, 0, 0, 0);
 	Window::display_fps(5, 0, poggers);
 	std::string str = "Coordinates: ";
@@ -102,8 +96,6 @@ void Window::display_stats(Mandelbrot* m, Julia* j) {
 		str.append(std::to_string(m->get_threads(1)));
 		str.append(")");
 		text->draw_text(str, poggers, 100, 0);
-		
-
 	}
 	if (j != nullptr) {
 		
@@ -123,15 +115,22 @@ void Window::display_stats(Mandelbrot* m, Julia* j) {
 		str.append(std::to_string(j->get_threads(1)));
 		str.append(")");
 		str.append("  Constant: ");
-		str.append(std::to_string((float)j->const_x));
+		str.append(std::to_string((float)j->julia_const_x));
+		str.pop_back();
+		str.pop_back();
+		str.pop_back();
 		str.append("x, ");
-		str.append(std::to_string((float)-j->const_y));
+		str.append(std::to_string((float)-j->julia_const_y));
+		str.pop_back();
+		str.pop_back();
+		str.pop_back();
 		str.append("y");
-		text->draw_text(str, poggers, 800, 0);
 
-		
+		if(m != nullptr)
+			text->draw_text(str, poggers, window_width / 2, 0);
+		else
+			text->draw_text(str, poggers, 100, 0);
 	}
-
 	SDL_Surface* screen = SDL_GetWindowSurface(window);
 	SDL_Rect rect = { 0, window_height- STATS_HEIGHT, 0, 0 };
 
@@ -156,7 +155,6 @@ bool Window::init_window(int width, int height) {
 
 void Window::draw(int iterations, Drawable* win) {
 	draw_from_matrix(iterations, win);					// draw
-	SDL_UpdateWindowSurface(window);						// draw call
 }
 
 void Window::draw_from_matrix(int iterations, Drawable* win) {

@@ -21,12 +21,6 @@
     <ClCompile Include="Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mandelbrot.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Julia.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SDL_Text.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -36,15 +30,12 @@
     <ClCompile Include="Positionable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Fractal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mandelbrot.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Julia.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SDL_Text.h">
@@ -54,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Positionable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Fractal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,5 +1,5 @@
 #include "Engine.h"
-#
+
 
 #define MAX_WIDTH 2560
 #define MAX_HEIGHT 1440
@@ -14,7 +14,7 @@ Engine::Engine(int width, int height, int fractals) {
 	if (height > MAX_HEIGHT) window_height = MAX_HEIGHT;// Init window height
 	else window_height = height;
 
-		pixel_matrix = new int* [MAX_WIDTH];				// Creates a matrix for all pixels
+	pixel_matrix = new int* [MAX_WIDTH];				// Creates a matrix for all pixels
 	for (int i = 0; i < MAX_WIDTH; i++) {
 		pixel_matrix[i] = new int[MAX_HEIGHT];
 		for (int j = 0; j < MAX_HEIGHT; j++) {
@@ -24,13 +24,29 @@ Engine::Engine(int width, int height, int fractals) {
 
 	screen = new Window(window_width, window_height, pixel_matrix, 10);
 
-	//mandelbrot = new Mandelbrot(pixel_matrix, 500, 1500, 0, window_height);
-	//screen->draw(mandelbrot->mandelbrot_set(1), mandelbrot);
 
-	julia = new Julia(pixel_matrix, 0, window_width, 0, window_height);
-	screen->draw(julia->julia_set(8), julia);
+	switch (fractals)
+	{
+	case 0:
+		mandelbrot = new Fractal("Mandelbrot", pixel_matrix, 0, width, 0, window_height - STATS_HEIGHT, -0.5);
+		screen->draw(mandelbrot->run_fractal(), mandelbrot);
+		break;
+	case 1:
+		julia = new Fractal("Julia", pixel_matrix, 0, width, 0, window_height - STATS_HEIGHT, 0);
+		screen->draw(julia->run_fractal(), julia);
+		break;
+	
+	default:
+		mandelbrot = new Fractal("Mandelbrot", pixel_matrix, 0, width / 2, 0, window_height - STATS_HEIGHT, -0.5);
+		julia = new Fractal("Julia", pixel_matrix, width / 2, width, 0, window_height - STATS_HEIGHT, 0);
+		screen->draw(mandelbrot->run_fractal(), mandelbrot);
+		screen->draw(julia->run_fractal(), julia);
+		break;
+	}
+	
+	clock = std::chrono::system_clock::now();
+
 	running = true;
-
 }
 
 Engine::~Engine() {
@@ -53,11 +69,21 @@ void Engine::events() {
 	
 	int mouse_x, mouse_y;
 	if (SDL_GetMouseState(&mouse_x, &mouse_y) & SDL_BUTTON_LEFT != 0) { //Checks if left mb is pressed
-		//continuous_rendering = false;
-		std::cout << "mouse: " << mouse_x << ", " << mouse_y << std::endl;
-		//mouse_x_coord = mandelbrot->x_coord + mandelbrot->x_pixel_scale * (mouse_x - 500);
-		//mouse_y_coord = mandelbrot->y_coord + mandelbrot->y_pixel_scale * (mouse_y - 500);
-		//screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
+		continuous_rendering = false;
+		if (mandelbrot != nullptr) {
+			mouse_x_coord = mandelbrot->x_coord + mandelbrot->x_pixel_scale * (mouse_x + mandelbrot->Drawable::start_x - mandelbrot->Drawable::width / 2);
+			mouse_y_coord = mandelbrot->y_coord + mandelbrot->y_pixel_scale * (mouse_y - mandelbrot->Drawable::height / 2);
+		}
+		else {
+			mouse_x_coord = julia->x_coord + julia->x_pixel_scale * (mouse_x + julia->Drawable::start_x - julia->Drawable::width / 2);
+			mouse_y_coord = julia->y_coord + julia->y_pixel_scale * (mouse_y - julia->Drawable::height / 2);
+		}
+		
+		if (julia != nullptr) {
+			julia->julia_const_x = mouse_x_coord;
+			julia->julia_const_y = mouse_y_coord;
+			screen->draw(julia->run_fractal(), julia);
+		} 
 	}
 	
 	switch (event.type) {
@@ -68,49 +94,80 @@ void Engine::events() {
 
 		case SDLK_LSHIFT:	// Zoom in
 			continuous_rendering = false;
-			mandelbrot->shift_to_mouse(0.5, mouse_x, mouse_y);
-			mandelbrot->zoom(1.25);
-			screen->draw(mandelbrot->mandelbrot_set(0), mandelbrot);
-			
-			/*else {
-				julia->shift_to_mouse(0.5, mouse_x - screen->window_width / 2, mouse_y);
+			if (mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y)) {
+				mandelbrot->shift_to_mouse(0.5, mouse_x, mouse_y);
+				mandelbrot->zoom(1.25);
+				screen->draw(mandelbrot->run_fractal(), mandelbrot);
+			}
+			if (julia != nullptr && julia->hitbox(mouse_x, mouse_y)) {
+				julia->shift_to_mouse(0.5, mouse_x, mouse_y);
 				julia->zoom(1.25);
-				//if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
-			}*/
+				screen->draw(julia->run_fractal(), julia);
+			}
 			break;
 
 		case SDLK_LCTRL:	// Zoom out
 			continuous_rendering = false;
-			mandelbrot->zoom(0.75);
-			screen->draw(mandelbrot->mandelbrot_set(0), mandelbrot);
-			
-			/*else {
+			if (mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y)) {
+				mandelbrot->zoom(0.75);
+				screen->draw(mandelbrot->run_fractal(), mandelbrot);
+			}
+			if (julia != nullptr && julia->hitbox(mouse_x, mouse_y)) {
 				julia->zoom(0.75);
-				//if (!continuous_rendering) screen->draw(1000, julia->julia_set(2, 1000, 2000, mouse_x_coord, mouse_y_coord));
-			}*/
+				screen->draw(julia->run_fractal(), julia);
+			}
 			break;
 
 		case SDLK_PLUS:
 			continuous_rendering = false;
-			mandelbrot->iterations *= 2;
-			screen->draw(mandelbrot->mandelbrot_set(0), mandelbrot);
+
+			if (mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y)) {
+				mandelbrot->iterations *= 2;
+				screen->draw(mandelbrot->run_fractal(), mandelbrot);
+			}
+			if (julia != nullptr && julia->hitbox(mouse_x, mouse_y)){
+				julia->iterations *= 2;
+				screen->draw(julia->run_fractal(), julia);
+			}
 			
 			break;
 
 		case SDLK_MINUS:
 			continuous_rendering = false;
-			if (mandelbrot->iterations > 1) {
-				mandelbrot->iterations /= 2;
-				screen->draw(mandelbrot->mandelbrot_set(0), mandelbrot);
-			}
+			if (mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y))
+				if (mandelbrot->iterations > 1) {
+					mandelbrot->iterations /= 2;
+					screen->draw(mandelbrot->run_fractal(), mandelbrot);
+				}
+			if (julia != nullptr && julia->hitbox(mouse_x, mouse_y))
+				if (julia->iterations > 1) {
+					julia->iterations /= 2;
+					screen->draw(julia->run_fractal(), julia);
+				}
+
+			break;
 		case SDLK_PAGEUP:
-			//mandelbrot->add_threads(1);
-			julia->add_threads(1);
+			if (mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y))
+				mandelbrot->add_threads(1);
+			if (julia != nullptr && julia->hitbox(mouse_x, mouse_y))
+				julia->add_threads(1);
 			break;
 
 		case SDLK_PAGEDOWN:
-			//mandelbrot->add_threads(-1);
-			julia->add_threads(-1);
+			if(mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y))
+				mandelbrot->add_threads(-1);
+			if (julia != nullptr && julia->hitbox(mouse_x, mouse_y))
+				julia->add_threads(-1);
+			break;
+
+		case SDLK_7:
+			show_julia = false;
+			break;
+
+		case SDLK_8:
+			continuous_rendering = false;
+			show_julia = true;
+			clock = std::chrono::system_clock::now();
 			break;
 
 		case SDLK_9:		// Stop rendering continuous
@@ -118,6 +175,7 @@ void Engine::events() {
 			break;
 
 		case SDLK_0:		// Render continuous
+			show_julia = false;
 			continuous_rendering = true;
 			break;
 		default:
@@ -134,10 +192,28 @@ void Engine::events() {
 
 
 	if (continuous_rendering) {
-		screen->draw(julia->julia_set(1), julia);
-		//mandelbrot->mandelbrot_set(0);
+
+		if(mandelbrot != nullptr)
+			screen->draw(mandelbrot->run_fractal(), mandelbrot);
+		if (julia != nullptr)
+			screen->draw(julia->run_fractal(), julia);
+
+	}
+
+	if (show_julia) {
+		if (julia != nullptr) {
+			std::chrono::system_clock::time_point point = std::chrono::system_clock::now();
+			std::chrono::duration<float> duration = point - clock;
+			julia->julia_const_x = 0.7885 * cos(duration.count() / 20);
+			julia->julia_const_y = 0.7885 * sin(duration.count() / 20);
+			screen->draw(julia->run_fractal(), julia);
+		}
 	}
 	
-	screen->display_stats(nullptr, julia);
+	screen->display_stats(mandelbrot, julia);
 
+}
+
+void Engine::set_new_time() {
+	clock = std::chrono::system_clock::now();
 }

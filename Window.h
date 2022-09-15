@@ -5,16 +5,12 @@
 #include "string"
 #include "chrono"
 #include "thread"
-#include "Mandelbrot.h"
-#include "Julia.h"
-#include "Positionable.h"
+#include "Fractal.h"
 
-
-
+#define STATS_HEIGHT 25
 
 class Window {
 public:
-	
 	int window_width;
 	int window_height;
 
@@ -22,7 +18,7 @@ public:
 	~Window();
 	void draw(int iterations, Drawable* win);
 	void display_fps(int x, int y, SDL_Surface* s);
-	void display_stats(Mandelbrot* m, Julia* j);
+	void display_stats(Fractal* m, Fractal* j);
 
 private:
 
@@ -34,8 +30,6 @@ private:
 	std::chrono::system_clock::time_point last_time;
 
 	std::thread* threads[10];
-
-	
 
 	bool init_window(int width, int height);
 	
