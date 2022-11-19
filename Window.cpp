@@ -26,6 +26,11 @@ Window::Window(int width, int height, int** matrix, int render_threads) {
 
 Window::~Window() {
 
+	// Deletes the window matrix
+	for (int i = 0; i < 1000; i++)
+		if (pixel_matrix[i] != nullptr)
+			delete(pixel_matrix[i]);
+	delete(pixel_matrix);
 	SDL_DestroyWindow(window);
 }
 

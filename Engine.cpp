@@ -5,28 +5,23 @@
 #define MAX_HEIGHT 1440
 
 Engine::Engine(int width, int height, int fractals) {
+	
+	// Init window size of the application
+	uint16_t window_width = width > MAX_WIDTH ? MAX_WIDTH : width;
+	uint16_t window_height = height > MAX_HEIGHT ? MAX_HEIGHT : height;
 
-	int window_width, window_height;
-
-	if (width > MAX_WIDTH) window_width = MAX_WIDTH;	// Init window width
-	else window_width = width;
-
-	if (height > MAX_HEIGHT) window_height = MAX_HEIGHT;// Init window height
-	else window_height = height;
-
-	pixel_matrix = new int* [MAX_WIDTH];				// Creates a matrix for all pixels
+	// Creates a matrix on ints representing each pixel
+	auto pixel_matrix = new int* [MAX_WIDTH];
 	for (int i = 0; i < MAX_WIDTH; i++) {
 		pixel_matrix[i] = new int[MAX_HEIGHT];
-		for (int j = 0; j < MAX_HEIGHT; j++) {
-			pixel_matrix[i][j] = 0;
-		}
+		for (int j = 0; j < MAX_HEIGHT; j++) pixel_matrix[i][j] = 0;
 	}
 
+	// Creates the window
 	screen = new Window(window_width, window_height, pixel_matrix, 10);
 
-
-	switch (fractals)
-	{
+	// Takes an arg which tells the program which fractal / fractals to display
+	switch (fractals){
 	case 0:
 		mandelbrot = new Fractal("Mandelbrot", pixel_matrix, 0, width, 0, window_height - STATS_HEIGHT, -0.5);
 		screen->draw(mandelbrot->run_fractal(), mandelbrot);
@@ -45,30 +40,23 @@ Engine::Engine(int width, int height, int fractals) {
 	}
 	
 	clock = std::chrono::system_clock::now();
-
 	running = true;
 }
 
 Engine::~Engine() {
-	
-	for (int i = 0; i < 1000; i++)
-		if(pixel_matrix[i] != nullptr)
-			delete(pixel_matrix[i]);
-
 	delete(julia);
 	delete(mandelbrot);
 	delete(screen);
-	delete(pixel_matrix);
 }
 
 void Engine::events() {
 
+	// Creates a pool of events
 	SDL_Event event;
 	SDL_PollEvent(&event);
 	
-	
 	int mouse_x, mouse_y;
-	if (SDL_GetMouseState(&mouse_x, &mouse_y) & SDL_BUTTON_LEFT != 0) { //Checks if left mb is pressed
+	if (SDL_GetMouseState(&mouse_x, &mouse_y) & (SDL_BUTTON_LEFT != 0)) { //Checks if left mb is pressed
 		continuous_rendering = false;
 		if (mandelbrot != nullptr) {
 			mouse_x_coord = mandelbrot->x_coord + mandelbrot->x_pixel_scale * (mouse_x + mandelbrot->Drawable::start_x - mandelbrot->Drawable::width / 2);
@@ -92,7 +80,7 @@ void Engine::events() {
 
 		switch (event.key.keysym.sym) {
 
-		case SDLK_LSHIFT:	// Zoom in
+		case SDLK_LSHIFT:	// Zoom in at mouse
 			continuous_rendering = false;
 			if (mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y)) {
 				mandelbrot->shift_to_mouse(0.5, mouse_x, mouse_y);
@@ -106,7 +94,7 @@ void Engine::events() {
 			}
 			break;
 
-		case SDLK_LCTRL:	// Zoom out
+		case SDLK_LCTRL:	// Zoom out at mouse
 			continuous_rendering = false;
 			if (mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y)) {
 				mandelbrot->zoom(0.75);
@@ -118,7 +106,7 @@ void Engine::events() {
 			}
 			break;
 
-		case SDLK_PLUS:
+		case SDLK_PLUS: // Increase quality
 			continuous_rendering = false;
 
 			if (mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y)) {
@@ -132,7 +120,7 @@ void Engine::events() {
 			
 			break;
 
-		case SDLK_MINUS:
+		case SDLK_MINUS: // Decrease quality
 			continuous_rendering = false;
 			if (mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y))
 				if (mandelbrot->iterations > 1) {
@@ -146,26 +134,26 @@ void Engine::events() {
 				}
 
 			break;
-		case SDLK_PAGEUP:
+		case SDLK_PAGEUP: // Increase thread count
 			if (mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y))
 				mandelbrot->add_threads(1);
 			if (julia != nullptr && julia->hitbox(mouse_x, mouse_y))
 				julia->add_threads(1);
 			break;
 
-		case SDLK_PAGEDOWN:
+		case SDLK_PAGEDOWN:	// Decrease thread count
 			if(mandelbrot != nullptr && mandelbrot->hitbox(mouse_x, mouse_y))
 				mandelbrot->add_threads(-1);
 			if (julia != nullptr && julia->hitbox(mouse_x, mouse_y))
 				julia->add_threads(-1);
 			break;
 
-		case SDLK_7:
+		case SDLK_7:	// Stop Julia
 			show_julia = false;
 			break;
 
 		case SDLK_8:
-			continuous_rendering = false;
+			continuous_rendering = false; // Showcase Julia
 			show_julia = true;
 			clock = std::chrono::system_clock::now();
 			break;
@@ -190,14 +178,11 @@ void Engine::events() {
 			break;
 	}
 
-
 	if (continuous_rendering && running) {
-
 		if(mandelbrot != nullptr)
 			screen->draw(mandelbrot->run_fractal(), mandelbrot);
 		if (julia != nullptr)
 			screen->draw(julia->run_fractal(), julia);
-
 	}
 
 	if (show_julia && running) {

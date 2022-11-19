@@ -26,7 +26,6 @@ private:
 	Window* screen;
 	Fractal* julia = nullptr;
 	Fractal* mandelbrot = nullptr;
-
-	int** pixel_matrix;
 };
+ 
  
