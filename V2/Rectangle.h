@@ -1,5 +1,6 @@
 #pragma once
 #include "Vector2.h"
+#include "SDL.h"
 
 /** Double rectangle **/
 
@@ -84,16 +85,16 @@ public:
 	* @param position
 	*	Position of rectangle.
 	*/
-	RectangleI(double width, double height, const Vector2d& position);
+	RectangleI(uint32_t width, uint32_t height, const Vector2i& position);
 
 	/** Width of the rectangle*/
-	double width;
+	uint32_t width;
 
 	/** Height of the rectangle*/
-	double height;
+	uint32_t height;
 
 	/** Position of the rectangle*/
-	Vector2d position;
+	Vector2i position;
 };
 
 
@@ -109,7 +110,7 @@ public:
 * @returns
 *	v1 *= d1
 */
-RectangleI& operator*=(RectangleI& v1, int d1);
+RectangleI& operator*=(RectangleI& v1, uint32_t d1);
 
 /*
 * Divides the size of the rectangle.
@@ -123,4 +124,4 @@ RectangleI& operator*=(RectangleI& v1, int d1);
 * @returns
 *	v1 /= d1
 */
-RectangleI& operator/=(RectangleI& v1, int d1);
+RectangleI& operator/=(RectangleI& v1, uint32_t d1);
