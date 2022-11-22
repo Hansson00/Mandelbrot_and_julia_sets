@@ -1,6 +1,8 @@
 #pragma once
 #include "Rectangle.h"
 #include "SDL.h"
+#include "iostream"
+#include "thread"
 class Fractal
 {
 public:
@@ -23,20 +25,41 @@ public:
 		void (*fractal_pointer)(const RectangleD&, 
 		const RectangleI&, uint32_t**, uint32_t, uint32_t));
 
-	/** Rectangle in space. */
+	/* Rectangle in space. */
 	RectangleD space_rect;
 
-	/** Rectangle which represents the matrix*/
+	/* Rectangle which represents the matrix*/
 	RectangleI matrix_rect;
 
-	/** Matrix which the fractal will be drawn to. */
+	/* Matrix which the fractal will be drawn to. */
 	uint32_t** matrix;
 
-	/** Executes fractal from a given pointer*/
+	/* Executes fractal from a given pointer*/
 	void generate_fractal(uint32_t infinity, uint32_t iterations);
+
+
+	/*
+	* Translets the fractal towards the mouse position.
+	* 
+	* @param mouse_pos
+	*	Coordiantes of the mouse on the screen.
+	*/
+	void translate(const Vector2d& mouse_pos);
+
+	/*
+	* Translets the fractal towards the mouse position.
+	*
+	* @param mouse_pos
+	*	Coordiantes of the mouse on the screen.
+	* 
+	* @param scaling
+	*	If how much the fractal space should translate towards the mouse.
+	*/
+	void translate(const Vector2d& mouse_pos, double scaling);
+
 	
 private:
-	/** A pointer which decides which fractal will be run*/
+	/* A pointer which decides which fractal will be run*/
 	void (*fractal_pointer)(const RectangleD&, const RectangleI&, uint32_t**, uint32_t, uint32_t);
 };
 

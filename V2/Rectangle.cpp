@@ -12,6 +12,11 @@ RectangleD::RectangleD(double width, double height, const Vector2d& position):
 {
 }
 
+void RectangleD::translate(const Vector2d& vector)
+{
+	position += vector;
+}
+
 RectangleD& operator*=(RectangleD& v1, double d1)
 {
 	v1.width *= d1;

@@ -8,7 +8,7 @@ class RectangleD
 {
 public:
 	
-	/** Construct empty rectangle at 0.0 ,0.0. */
+	/* Construct empty rectangle at 0.0 ,0.0. */
 	RectangleD();
 
 	/*
@@ -25,14 +25,22 @@ public:
 	*/
 	RectangleD(double width, double height, const Vector2d& position);
 
-	/** Width of the rectangle*/
+	/* (double) Width of the rectangle*/
 	double width;
 
-	/** Height of the rectangle*/
+	/* (double) Height of the rectangle*/
 	double height;
 
-	/** Position of the rectangle*/
+	/* Position of the rectangle*/
 	Vector2d position;
+
+	/*
+	* Translates the position on this Rectangle with a given vector
+	* 
+	* @param mouse_pos
+	*	A vector which tells how direction and how far the rectangle should move
+	*/
+	void translate(const Vector2d& mouse_pos);
 };
 
 
@@ -70,7 +78,7 @@ class RectangleI
 {
 public:
 
-	/** Construct empty rectangle at 0.0 ,0.0. */
+	/* Construct empty rectangle at 0.0 ,0.0. */
 	RectangleI();
 
 	/*
@@ -87,13 +95,13 @@ public:
 	*/
 	RectangleI(uint32_t width, uint32_t height, const Vector2i& position);
 
-	/** Width of the rectangle*/
+	/* (uint32_t) Width of the rectangle*/
 	uint32_t width;
 
-	/** Height of the rectangle*/
+	/* (uint32_t) Height of the rectangle*/
 	uint32_t height;
 
-	/** Position of the rectangle*/
+	/* Position of the rectangle*/
 	Vector2i position;
 };
 

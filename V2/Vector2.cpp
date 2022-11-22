@@ -31,7 +31,7 @@ Vector2i::Vector2i()
 	Vector2i(0, 0);
 }
 
-Vector2i::Vector2i(int x, int y) :
+Vector2i::Vector2i(uint32_t x, uint32_t y) :
 	x(x), y(y)
 {
 }

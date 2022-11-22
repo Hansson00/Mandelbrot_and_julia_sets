@@ -1,5 +1,5 @@
 #pragma once
-
+#include "SDL.h"
 /** Double Vector **/
 
 class Vector2d
@@ -19,9 +19,9 @@ public:
 	*/
 	Vector2d(double x, double y);
 
-	/** X component. */
+	/* X component. */
 	double x;
-	/** Y component. */
+	/* Y component. */
 	double y;
 };
 
@@ -59,7 +59,7 @@ Vector2d& operator+=(Vector2d& v1, const Vector2d& v2);
 class Vector2i
 {
 public:
-	/** Construct and int vector at 0,0.*/
+	/* Construct and int vector at 0,0. */
 	Vector2i();
 
 	/*
@@ -71,12 +71,12 @@ public:
 	* @param y
 	*	Y component.
 	*/
-	Vector2i(int x, int y);
+	Vector2i(uint32_t x, uint32_t y);
 
-	/** X component. */
-	int x;
-	/** Y component. */
-	int y;
+	/* X component. */
+	uint32_t x;
+	/* Y component. */
+	uint32_t y;
 };
 
 

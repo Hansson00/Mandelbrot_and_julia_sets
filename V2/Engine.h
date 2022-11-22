@@ -2,11 +2,12 @@
 #include "Fractal.h"
 #include "Window.h"
 #include "iostream"
+#include "chrono"
 
 class Engine
 {
 public:
-	/** Constructs an engine with a windowsize of 500x500. */
+	/* Constructs an engine with a windowsize of 500x500. */
 	Engine();
 
 	/*
@@ -19,20 +20,25 @@ public:
 	*	Window height of the application.
 	*/
 	Engine(uint32_t window_width, uint32_t window_height);
-
-	/** Deconstructor. */
-	//~Engine();
 	
-	/** Information about the fractal.*/
+	/* Information about the fractal.*/
 	Fractal* fractal;
 
-	/** The window application. */
+	/* The window application. */
 	Window* window;
 
-	/** Says if the application should close or not. */
+	/* Says if the application should close or not. */
 	bool running;
 
-	/** Runs the program. */
+	/* Runs the program. */
 	void main_loop();
+
+	/* Gets events from windowand executes them. */
+	void events();
+
+private:
+	uint32_t infinity = 32;
+	uint32_t iterations = 32;
+
 };
 
