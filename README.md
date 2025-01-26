@@ -13,7 +13,7 @@ The Mandelbrot set is the set of complex numbers c for which the function f(z) =
 
 ## Screenshots
 
-![App Screenshot](https://cdn.discordapp.com/attachments/882293770387865653/1072557851442171984/image.png)
+![image](image.png)
 
 
 ## Features
